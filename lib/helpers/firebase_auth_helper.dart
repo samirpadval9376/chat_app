@@ -10,14 +10,15 @@ class Auth {
   static final Auth auth = Auth._();
 
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+  GoogleSignInAccount? googleUser;
 
-  Future<UserCredential?> getUserWithEmailAndPassword(
-      {required UserModal userModal}) async {
+  Future<User?> getUserWithEmailAndPassword(
+      {required String email, required String password}) async {
     UserCredential? credential;
     try {
       credential = await firebaseAuth.createUserWithEmailAndPassword(
-        email: userModal.email,
-        password: userModal.password,
+        email: email,
+        password: password,
       );
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
@@ -29,30 +30,44 @@ class Auth {
       log("$e");
     }
 
-    return credential;
+    if (credential != null) {
+      return credential.user;
+    } else {
+      return null;
+    }
   }
 
-  Future<UserCredential?> signInUserWithEmailPassword(
-      {required UserModal userModal}) async {
+  Future<User?> signInUserWithEmailPassword(
+      {required String email, required String password}) async {
     UserCredential? credential;
 
     try {
       credential = await firebaseAuth.signInWithEmailAndPassword(
-          email: userModal.email, password: userModal.password);
+          email: email, password: password);
     } on FirebaseAuthException catch (e) {
       log(e.code);
     }
+
+    if (credential != null) {
+      return credential.user;
+    } else {
+      return null;
+    }
+  }
+
+  Future<AuthCredential?> getUserWithCredential() async {
+    googleUser = await GoogleSignIn(scopes: ['email']).signIn();
+    GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
+    AuthCredential credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
+    );
+    firebaseAuth.signInWithCredential(credential);
     return credential;
   }
 
-  getUserWithCredential() async {
-    OAuthCredential? credential;
-    GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
-    credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-    await firebaseAuth.signInWithCredential(credential);
+  Future<void> signOut() async {
+    await firebaseAuth.signOut();
+    await GoogleSignIn().signOut();
   }
 }

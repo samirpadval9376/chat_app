@@ -13,13 +13,37 @@ class FirebaseStoreHelper {
 
   String userCollection = "Users";
 
-  getUser({required UserModal userModal}) async {
+  Future<void> addUser(
+      {required UserModal userModal, required String? email}) async {
     await firebaseFireStore
         .collection(userCollection)
-        .doc(userModal.email)
+        .doc(email)
         .set(userModal.toMap)
         .then(
           (value) => log("created!!!"),
+        );
+  }
+
+  Future<void> updateUser(
+      {required UserModal userModal, required String email}) async {
+    await firebaseFireStore
+        .collection(userCollection)
+        .doc(email)
+        .update(userModal.toMap);
+  }
+
+  Future<void> deleteUser(
+      {required UserModal userModal, required String email}) async {
+    await firebaseFireStore.collection(userCollection).doc(email).delete();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getData() {
+    return firebaseFireStore.collection(userCollection).snapshots();
+  }
+
+  getUser({required UserModal userModal}) {
+    firebaseFireStore.collection(userCollection).add(userModal.toMap).then(
+          (value) => log(userModal.name),
         );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:chat_app/helpers/firebase_auth_helper.dart';
-import 'package:chat_app/modals/user_modal.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatelessWidget {
@@ -68,25 +68,21 @@ class LoginPage extends StatelessWidget {
                   height: 20,
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    UserModal userModal =
-                        UserModal(email: email.text, password: password.text);
-
+                  onPressed: () async {
                     if (formKey.currentState!.validate()) {
-                      Auth.auth
-                          .signInUserWithEmailPassword(userModal: userModal)
-                          .then(
-                            (value) => Navigator.of(context)
-                                .pushReplacementNamed('home_page')
-                                .then(
-                                  (value) => ScaffoldMessenger.of(context)
-                                      .showSnackBar(
-                                    const SnackBar(
-                                      content: Text("Successful"),
-                                    ),
-                                  ),
-                                ),
-                          );
+                      User? user = await Auth.auth.signInUserWithEmailPassword(
+                          email: email.text, password: password.text);
+
+                      if (user != null) {
+                        Navigator.of(context).pushReplacementNamed('home_page');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Invalid Email or Password"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
                     }
                   },
                   style: const ButtonStyle(
@@ -100,19 +96,13 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Auth.auth.getUserWithCredential().then(
-                          (value) => Navigator.of(context)
-                              .pushReplacementNamed('home_page')
-                              .then(
-                                (value) =>
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text("Successful"),
-                                  ),
-                                ),
-                              ),
-                        );
+                  onPressed: () async {
+                    AuthCredential? authCredential =
+                        await Auth.auth.getUserWithCredential();
+
+                    if (authCredential != null) {
+                      Navigator.of(context).pushReplacementNamed('home_page');
+                    }
                   },
                   style: const ButtonStyle(
                     backgroundColor: MaterialStatePropertyAll(Colors.blue),

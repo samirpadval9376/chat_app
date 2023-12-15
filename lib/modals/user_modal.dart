@@ -1,23 +1,26 @@
 class UserModal {
-  String email = "";
-  String password = "";
+  int id, age;
+  String name;
 
   UserModal({
-    required this.email,
-    required this.password,
+    required this.id,
+    required this.age,
+    required this.name,
   });
 
   factory UserModal.fromMap({required Map data}) {
     return UserModal(
-      email: data['email'],
-      password: data['password'],
+      id: data['id'],
+      age: data['age'],
+      name: data['name'],
     );
   }
 
   Map<String, dynamic> get toMap {
     return {
-      'email': email,
-      'password': password,
+      'id': id,
+      'age': age,
+      'name': name,
     };
   }
 }

@@ -1,8 +1,4 @@
-import 'dart:developer';
-
 import 'package:chat_app/controllers/firebase_controller.dart';
-import 'package:chat_app/modals/user_modal.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -95,13 +91,11 @@ class SignupPage extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    UserModal userModal =
-                        UserModal(email: email.text, password: password.text);
-
                     if (formKey.currentState!.validate()) {
                       if (password.text == confirmPassword.text) {
                         Auth.auth
-                            .getUserWithEmailAndPassword(userModal: userModal)
+                            .getUserWithEmailAndPassword(
+                                email: email.text, password: password.text)
                             .then(
                               (value) =>
                                   Navigator.of(context).pushNamed('/').then(
