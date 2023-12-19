@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:chat_app/helpers/firebase_auth_helper.dart';
 import 'package:chat_app/helpers/firestore_helper.dart';
+import 'package:chat_app/modals/friend_model.dart';
 import 'package:chat_app/modals/user_modal.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,7 +22,7 @@ class HomePage extends StatelessWidget {
           IconButton(
             onPressed: () {
               Auth.auth.signOut().then(
-                    (value) => Navigator.of(context).pushNamed('/'),
+                    (value) => Navigator.of(context).pushReplacementNamed('/'),
                   );
             },
             icon: const Icon(Icons.logout_outlined),
@@ -31,31 +32,32 @@ class HomePage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: StreamBuilder(
-          stream: FirebaseStoreHelper.firebaseStoreHelper.getData(),
-          builder: (context, snapShot) {
-            QuerySnapshot? data = snapShot.data;
-            List<QueryDocumentSnapshot> allData = data!.docs;
-            List<UserModal> allUsers = allData
-                .map((e) => UserModal.fromMap(data: e.data() as Map))
-                .toList();
+          stream: FirebaseStoreHelper.firebaseStoreHelper.getFriendsList(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              QuerySnapshot<Map<String, dynamic>>? data = snapshot.data;
+              List<QueryDocumentSnapshot<Map<String, dynamic>>>? alldocs =
+                  data?.docs;
 
-            if (snapShot.hasData) {
+              List<FriendModel> allFriends = alldocs
+                      ?.map((e) => FriendModel.fromMap(data: e.data()))
+                      .toList() ??
+                  [];
               return ListView.builder(
-                itemCount: allUsers.length,
-                itemBuilder: (context, index) {
-                  UserModal userModal = allUsers[index];
-                  log("${allUsers.length}");
-                  return ListTile(
-                    leading: CircleAvatar(
-                      foregroundImage: NetworkImage(
-                        user?.photoURL ??
-                            "https://comprasalternativas.com.br/wp-content/uploads/2021/05/perfil-1988x2048.png",
-                      ),
-                    ),
-                    title: Text(userModal.name),
-                  );
-                },
-              );
+                  itemCount: allFriends.length,
+                  itemBuilder: (context, index) {
+                    FriendModel friendModel = allFriends[index];
+                    return ListTile(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(
+                          'chat_page',
+                          arguments: user,
+                        );
+                      },
+                      title: Text(friendModel.name),
+                      subtitle: Text(friendModel.email),
+                    );
+                  });
             } else {
               return const Center(
                 child: CircularProgressIndicator(),
@@ -66,12 +68,6 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          UserModal user1 = UserModal(
-            id: 101,
-            age: 19,
-            name: "Samir",
-          );
-
           showDialog(
             context: context,
             builder: (context) {
@@ -80,44 +76,59 @@ class HomePage extends StatelessWidget {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextField(
-                      onChanged: (val) {
-                        user1.id = int.parse(val);
-                      },
-                      decoration: const InputDecoration(
-                        labelText: "Id",
-                      ),
-                    ),
-                    TextField(
-                      onChanged: (val) {
-                        user1.name = val;
-                      },
-                      decoration: const InputDecoration(
-                        labelText: "Name",
-                      ),
-                    ),
-                    TextField(
-                      onChanged: (val) {
-                        user1.age = int.parse(val);
-                      },
-                      decoration: const InputDecoration(
-                        labelText: "Age",
+                    SizedBox(
+                      height: 100,
+                      child: StreamBuilder(
+                        stream:
+                            FirebaseStoreHelper.firebaseStoreHelper.getData(),
+                        builder: (context, snapShot) {
+                          QuerySnapshot? data = snapShot.data;
+                          List<QueryDocumentSnapshot> allData =
+                              data?.docs ?? [];
+                          List<UserModal> allUsers = allData
+                              .map((e) =>
+                                  UserModal.fromMap(data: e.data() as Map))
+                              .toList();
+
+                          if (snapShot.hasData) {
+                            return ListView.builder(
+                              itemCount: allUsers.length,
+                              itemBuilder: (context, index) {
+                                UserModal userModal = allUsers[index];
+                                log("${allUsers[index]}");
+                                return ListTile(
+                                  onTap: () async {
+                                    if (allUsers.contains(userModal)) {
+                                      await FirebaseStoreHelper
+                                          .firebaseStoreHelper
+                                          .addFriend(userModal: userModal)
+                                          .then(
+                                            (value) =>
+                                                allUsers.remove(userModal),
+                                          );
+                                    }
+                                    Navigator.pop(context);
+                                  },
+                                  leading: CircleAvatar(
+                                    foregroundImage: NetworkImage(
+                                      user?.photoURL ??
+                                          "https://comprasalternativas.com.br/wp-content/uploads/2021/05/perfil-1988x2048.png",
+                                    ),
+                                  ),
+                                  title: Text(userModal.name),
+                                );
+                              },
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
                       ),
                     ),
                   ],
                 ),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      FirebaseStoreHelper.firebaseStoreHelper
-                          .addUser(userModal: user1, email: user!.email)
-                          .then(
-                            (value) => Navigator.pop(context),
-                          );
-                    },
-                    child: const Text("Done"),
-                  ),
-                ],
               );
             },
           );

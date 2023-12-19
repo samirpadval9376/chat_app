@@ -1,5 +1,6 @@
 import 'package:chat_app/helpers/firebase_auth_helper.dart';
 import 'package:chat_app/helpers/firestore_helper.dart';
+import 'package:chat_app/views/screens/chat_page.dart';
 import 'package:chat_app/views/screens/home_page.dart';
 import 'package:chat_app/views/screens/login_page.dart';
 import 'package:chat_app/views/screens/signup_page.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => LoginPage(),
         'signup_page': (context) => SignupPage(),
         'home_page': (context) => HomePage(),
+        'chat_page': (context) => ChatPage(),
       },
     );
   }

@@ -1,23 +1,23 @@
-class UserModal {
+class FriendModel {
   String id;
   String name;
   String email;
 
-  UserModal({
+  FriendModel({
     required this.id,
     required this.name,
     required this.email,
   });
 
-  factory UserModal.fromMap({required Map data}) {
-    return UserModal(
+  factory FriendModel.fromMap({required Map data}) {
+    return FriendModel(
       id: data['id'],
       name: data['name'],
       email: data['email'],
     );
   }
 
-  Map<String, dynamic> get toMap {
+  Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,

@@ -55,15 +55,16 @@ class Auth {
     }
   }
 
-  Future<AuthCredential?> getUserWithCredential() async {
+  Future<User?> getUserWithCredential() async {
     googleUser = await GoogleSignIn(scopes: ['email']).signIn();
     GoogleSignInAuthentication googleAuth = await googleUser!.authentication;
     AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
-    firebaseAuth.signInWithCredential(credential);
-    return credential;
+    UserCredential? userCredential;
+    userCredential = await firebaseAuth.signInWithCredential(credential);
+    return userCredential.user;
   }
 
   Future<void> signOut() async {

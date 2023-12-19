@@ -1,4 +1,6 @@
 import 'package:chat_app/helpers/firebase_auth_helper.dart';
+import 'package:chat_app/helpers/firestore_helper.dart';
+import 'package:chat_app/modals/user_modal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -97,11 +99,22 @@ class LoginPage extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    AuthCredential? authCredential =
-                        await Auth.auth.getUserWithCredential();
+                    User? user = await Auth.auth.getUserWithCredential();
 
-                    if (authCredential != null) {
-                      Navigator.of(context).pushReplacementNamed('home_page');
+                    if (user != null) {
+                      UserModal userModel = UserModal(
+                        id: user.uid,
+                        name: user.displayName as String,
+                        email: user.email as String,
+                      );
+                      FirebaseStoreHelper.firebaseStoreHelper
+                          .addUser(
+                            userModal: userModel,
+                          )
+                          .then(
+                            (value) => Navigator.of(context)
+                                .pushReplacementNamed('home_page'),
+                          );
                     }
                   },
                   style: const ButtonStyle(

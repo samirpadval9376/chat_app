@@ -16,4 +16,12 @@ class ChatModal {
       data['type'],
     );
   }
+
+  Map<String, dynamic> get toMap {
+    return {
+      'msg': msg,
+      'time': time.millisecondsSinceEpoch,
+      'type': type,
+    };
+  }
 }
