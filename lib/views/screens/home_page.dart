@@ -43,21 +43,53 @@ class HomePage extends StatelessWidget {
                       ?.map((e) => FriendModel.fromMap(data: e.data()))
                       .toList() ??
                   [];
-              return ListView.builder(
-                  itemCount: allFriends.length,
-                  itemBuilder: (context, index) {
-                    FriendModel friendModel = allFriends[index];
-                    return ListTile(
-                      onTap: () {
-                        Navigator.of(context).pushNamed(
-                          'chat_page',
-                          arguments: user,
-                        );
-                      },
-                      title: Text(friendModel.name),
-                      subtitle: Text(friendModel.email),
-                    );
-                  });
+              return GestureDetector(
+                onLongPress: () {
+                  UserModal users = UserModal(
+                      id: "101", name: "samir", email: "abc@gmail.com");
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text("Update User"),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            onChanged: (val) {
+                              users.name = val;
+                            },
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            log(users.name);
+                            await FirebaseStoreHelper.firebaseStoreHelper
+                                .updateUser(userModal: users);
+                          },
+                          child: const Text("Done"),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: ListView.builder(
+                    itemCount: allFriends.length,
+                    itemBuilder: (context, index) {
+                      FriendModel friendModel = allFriends[index];
+                      return ListTile(
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            'chat_page',
+                            arguments: friendModel,
+                          );
+                        },
+                        title: Text(friendModel.name),
+                        subtitle: Text(friendModel.email),
+                      );
+                    }),
+              );
             } else {
               return const Center(
                 child: CircularProgressIndicator(),

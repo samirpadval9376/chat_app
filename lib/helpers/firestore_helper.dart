@@ -27,12 +27,13 @@ class FirebaseStoreHelper {
         );
   }
 
-  Future<void> updateUser(
-      {required UserModal userModal, required String email}) async {
+  Future<void> updateUser({required UserModal userModal}) async {
     await firebaseFireStore
         .collection(userCollection)
-        .doc(email)
-        .update(userModal.toMap);
+        .doc(userModal.email)
+        .update(
+          userModal.toMap,
+        );
   }
 
   Future<void> deleteUser(
@@ -81,20 +82,16 @@ class FirebaseStoreHelper {
         .snapshots();
   }
 
-  sentChat(
+  Future<void> sentChat(
       {required ChatModal chatModal,
       required String senderId,
-      required String receiverId}) {
-    String email = Auth.auth.firebaseAuth.currentUser!.email as String;
-
+      required String receiverId}) async {
     Map<String, dynamic> data = chatModal.toMap;
 
     data.update('type', (value) => 'sent');
 
-    firebaseFireStore
+    await firebaseFireStore
         .collection(userCollection)
-        .doc(email)
-        .collection(friends)
         .doc(senderId)
         .collection(receiverId)
         .doc(chatModal.time.millisecondsSinceEpoch.toString())
@@ -102,10 +99,8 @@ class FirebaseStoreHelper {
 
     data.update('type', (value) => 'rec');
 
-    firebaseFireStore
+    await firebaseFireStore
         .collection(userCollection)
-        .doc(email)
-        .collection(friends)
         .doc(receiverId)
         .collection(senderId)
         .doc(chatModal.time.millisecondsSinceEpoch.toString())
@@ -113,14 +108,11 @@ class FirebaseStoreHelper {
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getChats(
-      {required String receiverId, required String senderId}) {
-    String email = Auth.auth.firebaseAuth.currentUser!.email as String;
+      {required String senderId, required String receiverId}) {
     return firebaseFireStore
         .collection(userCollection)
-        .doc(email)
-        .collection(friends)
-        .doc(receiverId)
-        .collection(senderId)
+        .doc(senderId)
+        .collection(receiverId)
         .snapshots();
   }
 }
